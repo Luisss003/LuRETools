@@ -11,23 +11,23 @@ void check_elf_header(const char *filename) {
         return;
     }
 
-    unsigned char arch_word_size[16];
-    if (read(fd, arch_word_size, 16) != 16) {
-        dprintf(STDERR_FILENO, "Failed to read ELF arch_word_size\n");
+    unsigned char file_info[16];
+    if (read(fd, file_info, 16) != 16) {
+        dprintf(STDERR_FILENO, "Failed to read ELF file_info\n");
         close(fd);
         return;
     }
 
-    if (memcmp(arch_word_size, "\x7f""ELF", 4) != 0) {
+    if (memcmp(file_info, "\x7f""ELF", 4) != 0) {
         dprintf(STDOUT_FILENO, "Not an ELF file.\n");
     } 
     else {
         dprintf(STDOUT_FILENO, "Valid ELF file.\n");
 
-        if(arch_word_size[4] == 1) {
+        if(file_info[4] == 1) {
             dprintf(STDOUT_FILENO, "Class: 32-bit\n");
         } 
-        else if (arch_word_size[4] == 2) {
+        else if (file_info[4] == 2) {
             dprintf(STDOUT_FILENO, "Class: 64-bit\n");
         } 
         else {

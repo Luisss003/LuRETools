@@ -16,28 +16,28 @@ void print_hex(const char *filename) {
     off_t offset = 0;
 
     while ((n = read(fd, buf, sizeof(buf))) > 0) {
-        dprintf(STDOUT_FILENO, "%08lx  ", offset);
+        printf("%08lx  ", offset);
 
         for (i = 0; i < 16; i++) {
             if (i < n) {
-                dprintf(STDOUT_FILENO, "%02x ", buf[i]);
+                printf("%02x ", buf[i]);
             } else {
-                dprintf(STDOUT_FILENO, "   ");
+                printf("   ");
             }
         }
 
-        dprintf(STDOUT_FILENO, " ");
+        printf(" ");
 
         for (i = 0; i < n; i++) {
             if (isprint(buf[i])) {
-                dprintf(STDOUT_FILENO, "%c", buf[i]);
+                printf("%c", buf[i]);
             } 
             else {
-                dprintf(STDOUT_FILENO, ".");
+                printf(".");
             }
         }
 
-        dprintf(STDOUT_FILENO, "\n");
+        printf("\n");
         offset += n;
     }
 
