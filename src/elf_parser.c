@@ -1,39 +1,45 @@
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
+#include "elf_parser.h"
 #include <stdio.h>
-#include "../include/elf_parser.h"
+#include <stdlib.h>
+#include <string.h>
+#include <elf.h>
+/**
+ * Checks if the given file is an ELF binary.
+ * This function reads the first few bytes of the file to check
+ * for the ELF magic number (0x7f followed by 'E', 'L', 'F').
+ */
+int is_elf(const char *filename) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) return 0;
 
-void check_elf_header(const char *filename) {
-    int fd = open(filename, O_RDONLY);
-    if (fd < 0) {
-        perror("open");
+    //Read the ELF header to check the magic number
+    unsigned char e_ident[EI_NIDENT];
+    fread(e_ident, 1, EI_NIDENT, file);
+    fclose(file);
+
+    //Determine whether the file is an ELF file by checking the magic number
+    return memcmp(e_ident, ELFMAG, SELFMAG) == 0;
+}
+
+/**
+ * Parses the ELF file and prints some basic information.
+ * This function reads the ELF header and prints the entry point,
+ * program header offset, and section header offset.
+ */
+void parse_elf(const char *filename) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        perror("fopen");
         return;
     }
 
-    unsigned char file_info[16];
-    if (read(fd, file_info, 16) != 16) {
-        dprintf(STDERR_FILENO, "Failed to read ELF file_info\n");
-        close(fd);
-        return;
-    }
+    //Read the ELF header
+    Elf64_Ehdr *ehdr;
+    fread(&ehdr, 1, sizeof(ehdr), file);
 
-    if (memcmp(file_info, "\x7f""ELF", 4) != 0) {
-        dprintf(STDOUT_FILENO, "Not an ELF file.\n");
-    } 
-    else {
-        dprintf(STDOUT_FILENO, "Valid ELF file.\n");
+    printf("ELF Entry Point: 0x%lx\n", ehdr->e_entry);
+    printf("Program Header Offset: 0x%lx\n", ehdr->e_phoff);
+    printf("Section Header Offset: 0x%lx\n", ehdr->e_shoff);
 
-        if(file_info[4] == 1) {
-            dprintf(STDOUT_FILENO, "Class: 32-bit\n");
-        } 
-        else if (file_info[4] == 2) {
-            dprintf(STDOUT_FILENO, "Class: 64-bit\n");
-        } 
-        else {
-            dprintf(STDOUT_FILENO, "Class: Unknown\n");
-        }
-    }
-
-    close(fd);
+    fclose(file);
 }

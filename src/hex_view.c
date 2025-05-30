@@ -1,45 +1,42 @@
-#include <fcntl.h>
-#include <unistd.h>
+#include "hex_view.h"
 #include <stdio.h>
 #include <ctype.h>
-#include "../include/hex_view.h"
 
-void print_hex(const char *filename) {
-    int fd = open(filename, O_RDONLY);
-    if (fd < 0) {
-        perror("open");
+/**
+ * Displays a hexadecimal view of the specified file.
+ * This function reads the file in chunks and prints each byte in hexadecimal format,
+ * along with its ASCII representation if printable.
+ */
+void hex_view(const char *filename, size_t length) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        perror("fopen");
         return;
     }
 
-    unsigned char buf[16];
-    ssize_t n, i;
-    off_t offset = 0;
 
-    while ((n = read(fd, buf, sizeof(buf))) > 0) {
-        printf("%08lx  ", offset);
+    unsigned char buffer[16];
+    size_t bytesRead;
+    size_t total_read = 0;
 
-        for (i = 0; i < 16; i++) {
-            if (i < n) {
-                printf("%02x ", buf[i]);
-            } else {
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0 && total_read < length) {
+        printf("%08zx  ", total_read);
+        for (int i = 0; i < 16; i++) {
+            if (i < bytesRead){
+                printf("%02x ", buffer[i]);
+            }
+            else {
                 printf("   ");
             }
         }
 
         printf(" ");
-
-        for (i = 0; i < n; i++) {
-            if (isprint(buf[i])) {
-                printf("%c", buf[i]);
-            } 
-            else {
-                printf(".");
-            }
-        }
+        for (size_t i = 0; i < bytesRead; i++)
+            printf("%c", isprint(buffer[i]) ? buffer[i] : '.');
 
         printf("\n");
-        offset += n;
+        total_read += bytesRead;
     }
 
-    close(fd);
+    fclose(file);
 }

@@ -1,6 +1,7 @@
 #ifndef PE_PARSER_H
 #define PE_PARSER_H
 
-void check_pe_header(const char *filename);
+int is_pe(const char *filename);
+void parse_pe(const char *filename);
 
 #endif

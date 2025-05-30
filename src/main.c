@@ -1,44 +1,32 @@
-#include <unistd.h>
-#include <string.h>
 #include <stdio.h>
-#include "../include/strings.h"
-#include "../include/hex_view.h"
-#include "../include/elf_parser.h"
-
-void print_usage(const char *prog) {
-    printf(
-        "Usage: %s <mode> <file>\n"
-        "Modes:\n"
-        "  -strings    Extract printable strings\n"
-        "  -hex        Print file in hex + ASCII\n"
-        "  -elf        Check ELF header\n"
-        "  -net        Parses PCAP file\n",
-        prog);
-}
+#include "elf_parser.h"
+#include "hex_view.h"
+#include "pe_parser.h"
+#include "strings.h"
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
-        print_usage(argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <binary>\n", argv[0]);
         return 1;
     }
 
-    const char *mode = argv[1];
-    const char *filename = argv[2];
+    const char *filename = argv[1];
 
-    if (strcmp(mode, "-strings") == 0) {
-        extract_strings(filename, 4); // default min length = 4
+    if (is_elf(filename)) {
+        printf("[*] Detected ELF binary.\n");
+        parse_elf(filename);
+    } else if (is_pe(filename)) {
+        printf("[*] Detected PE binary.\n");
+        parse_pe(filename);
+    } else {
+        printf("[!] Unknown binary format.\n");
     }
-    else if (strcmp(mode, "-hex") == 0) {
-        print_hex(filename);
-    }
-    else if (strcmp(mode, "-elf") == 0) {
-        check_elf_header(filename);
-    }
-    else {
-        printf("Unknown mode: %s\n", mode);
-        print_usage(argv[0]);
-        return 1;
-    }
+
+    printf("\n[Hex Dump]\n");
+    hex_view(filename, 64);
+
+    printf("\n[Extracted Strings]\n");
+    extract_strings(filename);
 
     return 0;
 }

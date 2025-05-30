@@ -1,47 +1,34 @@
-#include <fcntl.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <string.h>
+#include "strings.h"
 #include <stdio.h>
-#include "../include/strings.h"
+#include <ctype.h>
 
-void extract_strings(char *filename, int min_length) {
-    int fd = open(filename, O_RDONLY);
-    if (fd < 0) {
-        perror("open");
+void extract_strings(const char *filename) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        perror("fopen");
         return;
     }
 
-    unsigned char buf[1024];
-    unsigned char temp[256];
-    int count = 0;
-    ssize_t bytes, i;
+    int ch, count = 0;
+    char buf[256];
 
-    while ((bytes = read(fd, buf, sizeof(buf))) > 0) {
-        for (i = 0; i < bytes; i++) {
-            if (isprint(buf[i])) {
-                if (count < (int)(sizeof(temp) - 1)) {
-                    temp[count++] = buf[i];
-                } else {
-                    count = 0;
-                }
-            } else {
-                if (count >= min_length) {
-                    temp[count] = '\0';
-                    write(STDOUT_FILENO, temp, count);
-                    write(STDOUT_FILENO, "\n", 1);
-                }
-                count = 0;
+    while ((ch = fgetc(file)) != EOF) {
+        if (isprint(ch)) {
+            if (count < sizeof(buf) - 1)
+                buf[count++] = ch;
+        } else {
+            if (count >= 4) {
+                buf[count] = '\0';
+                printf("%s\n", buf);
             }
+            count = 0;
         }
     }
 
-    if (count >= min_length) {
-        temp[count] = '\0';
-        write(STDOUT_FILENO, temp, count);
-        write(STDOUT_FILENO, "\n", 1);
+    if (count >= 4) {
+        buf[count] = '\0';
+        printf("%s\n", buf);
     }
 
-    close(fd);
+    fclose(file);
 }
-
