@@ -6,7 +6,16 @@ SRC_DIR = src
 OBJ_DIR = obj
 BIN = luretools
 
-SRCS = $(wildcard $(SRC_DIR)/*.c)
+SRCS = \
+	$(SRC_DIR)/main.c \
+	$(SRC_DIR)/lure_modules.c \
+	$(SRC_DIR)/lure_disarm.c \
+	$(SRC_DIR)/lure_cfg.c
+
+# Parked until a real Ghidra/Sleigh/pypcode backend is added.
+DISABLED_SRCS = \
+	$(SRC_DIR)/lure_pcode.c
+
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 $(BIN): $(OBJS)
@@ -23,4 +32,3 @@ run: $(BIN)
 
 clean:
 	rm -rf $(OBJ_DIR) $(BIN)
-
