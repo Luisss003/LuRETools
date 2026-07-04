@@ -1,5 +1,7 @@
 # LuRETools
-Reverse Engineering Utility Suite in C 
+LuRETools is a research oriented reverse engineering suite for vulnerability analysis of compiled ELF binaries. It's a mix of binary structure recovery, P-code fact extraction, control-flow and dataflow analysis, dangerous sink identification, and heap-misuse triage to study how vulnerability-relevant behavior appears after compilation, optimization, stripping, and binary lowering.
+
+The long-term goal is to support both practical reverse engineering workflows, such as identifying suspicious memcpy paths, allocation/free/use patterns, and UAF or double-free candidates, and research workflows, such as evaluating whether source-level CWE patterns remain recoverable in optimized binaries.
 
 ## Current commands
 ```sh
